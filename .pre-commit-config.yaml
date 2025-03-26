@@ -1,0 +1,22 @@
+fail_fast: true
+
+repos:
+repos:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.11.2
+  hooks:
+    # Run the linter.
+    - id: ruff
+      types_or: [ python, pyi ]
+      args: [ --fix ]
+    # Run the formatter.
+    - id: ruff-format
+      types_or: [ python, pyi ]
+- repo: https://github.com/pre-commit/mirrors-mypy # static type checker
+  rev: v1.15.0
+  hooks:
+    - id: mypy
+      args: [ "--config-file", "mypy.ini" ]
+      additional_dependencies:
+        - "pydantic>=2.10.6"

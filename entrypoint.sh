@@ -1,0 +1,1 @@
+python -m shinbotsu_data.main
