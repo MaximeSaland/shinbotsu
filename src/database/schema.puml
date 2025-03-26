@@ -1,0 +1,61 @@
+@startuml
+entity "user" as u {
+    *user_id: number <<generated>>
+    *email: string
+    --
+    *username: string
+    *password: string
+    date_joined: date
+    last_login: date
+    is_staff: boolean
+    anki_key: string
+    bunpro_api_key: string
+    wanikuni_api_key: string
+}
+
+entity "work" as w {
+    *id: number<<generated>>
+    *work_id: number
+    --
+    *title: string
+    title_en: string
+    studio/author: string
+    publisher: string
+    release_date: date
+    synopsis: text
+    media_type: string['Anime', 'Live Action', 'Novel', 'Manga', 'Video game']
+}
+
+entity "reviews" {
+    *review_id: number<<generated>>
+    --
+    rating: number
+    difficulty: number
+    impression: text
+    is_spoiler: boolean
+}
+
+entity "user_work" as uw {
+    *user_id: number
+    *work_id: number
+    --
+    status: string['Dropped', 'Plan to engage', 'On hold', 'In progress', 'Completed']
+}
+
+entity "user_list" as ul {
+    *list_id: number<<generated>>
+    *user_id: number<<FK>>
+    --
+    list_name: string
+    created_at: timestamp
+}
+
+entity "user_list_item" as uli {
+    *item_id: number<<generated>>
+    *list_id: number<<FK>>
+    *work_id: number<<FK>>
+    --
+    added_at: timestamp
+}
+
+@enduml
