@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:17.4
+    restart: always
+    # TODO add environment variables
+    environment: 
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PWD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - backend
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -d ${DB_NAME} -U ${DB_USER}
+      interval: 30s
+      retries: 3
+      start_period: 5s
+      timeout: 10s
+
+networks:
+  backend:
+
+volumes:
+  postgres_data:

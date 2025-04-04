@@ -13,9 +13,9 @@ entity "user" as u {
     wanikuni_api_key: string
 }
 
-entity "work" as w {
+entity "media" as m {
     *id: number<<generated>>
-    *work_id: number
+    *media_id: number
     --
     *title: string
     title_en: string
@@ -23,10 +23,53 @@ entity "work" as w {
     publisher: string
     release_date: date
     synopsis: text
-    media_type: string['Anime', 'Live Action', 'Novel', 'Manga', 'Video game']
+    media_type: string['anime', 'live action', 'novel', 'manga', 'video game']
 }
 
-entity "reviews" {
+entity "anime_detail" as ad {
+    *media_id:reference<<media:id>>
+    --
+    season:number
+    nb_episode:number
+    
+}
+
+entity "person" as p {
+    id: number<<generated>>
+    source_id:string
+    name:string
+}
+
+entity "producer" as pr {
+    id:number
+    source_id:number
+    name:string
+}
+
+entity "media_person" as mp {
+    id_media:number
+    id_person:number
+}
+
+entity "media_producer" as mp {
+    id_media:number
+    id_producer:number
+    role:string['studio', 'producer', 'publisher', 'licensors']
+}
+
+
+entity "media_tag" as mt {
+    *id_media: number
+    *id_tag: number
+    category: string["genres", "themes", "demographics"]
+}
+
+entity "tag" as t {
+    *id:number<<generated>>
+    label:string
+}
+
+entity "reviews" as r {
     *review_id: number<<generated>>
     --
     rating: number
@@ -35,9 +78,9 @@ entity "reviews" {
     is_spoiler: boolean
 }
 
-entity "user_work" as uw {
+entity "user_media" as um {
     *user_id: number
-    *work_id: number
+    *media_id: number
     --
     status: string['Dropped', 'Plan to engage', 'On hold', 'In progress', 'Completed']
 }
@@ -53,9 +96,12 @@ entity "user_list" as ul {
 entity "user_list_item" as uli {
     *item_id: number<<generated>>
     *list_id: number<<FK>>
-    *work_id: number<<FK>>
+    *media_id: number<<FK>>
     --
     added_at: timestamp
 }
+
+m}o--||mt
+
 
 @enduml

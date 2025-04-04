@@ -20,3 +20,4 @@ repos:
       args: [ "--config-file", "mypy.ini" ]
       additional_dependencies:
         - "pydantic>=2.10.6"
+        - "types-requests"
