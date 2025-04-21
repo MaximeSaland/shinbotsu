@@ -1,7 +1,8 @@
-from typing import Generator
+from typing import Any, Generator
 
 import pytest
 from faker import Faker
+from pytest_mock.plugin import MockerFixture
 from sqlalchemy_utils import database_exists, drop_database, create_database
 
 from shinbotsu_data.api.jikan import JikanApiExtractor
@@ -50,3 +51,8 @@ def faker_anime() -> Faker:
 @pytest.fixture
 def jikan_api_extractor() -> JikanApiExtractor:
     return JikanApiExtractor()
+
+
+@pytest.fixture
+def mock_time_sleep(mocker: MockerFixture) -> Any:
+    return mocker.patch("time.sleep")

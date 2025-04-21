@@ -1,6 +1,4 @@
-from typing import Generator
-from unittest.mock import patch
-
+from typing import Any
 import pytest
 from faker import Faker
 
@@ -86,12 +84,6 @@ ani2_updated["year"] = 2035
 ani2_updated["status"] = "updated status"
 
 
-@pytest.fixture
-def no_sleep() -> Generator[None, None, None]:
-    with patch("time.sleep", return_value=None):
-        yield
-
-
 @pytest.mark.parametrize(
     "initial_data, incoming_data, expected_data",
     [
@@ -119,7 +111,7 @@ def test_extract_data_tag(
     initial_data: list[dict[str, int | str | None]],
     incoming_data: list[dict[str, int | str | None]],
     expected_data: list[dict[str, int | str | None]],
-    no_sleep: Generator[None, None, None],
+    mock_time_sleep: Any,
 ) -> None:
     if len(initial_data) > 0:
         db.tag_controller.upsert_all(
@@ -167,7 +159,7 @@ def test_extract_data_producer(
     initial_data: list[dict[str, int | str | None]],
     incoming_data: list[dict[str, int | str | None]],
     expected_data: list[dict[str, int | str | None]],
-    no_sleep: Generator[None, None, None],
+    mock_time_sleep: Any,
 ) -> None:
     if len(initial_data) > 0:
         db.producer_controller.upsert_all(
@@ -219,7 +211,7 @@ def test_extract_data_anime(
     initial_data: list[dict[str, int | str | None]],
     incoming_data: list[dict[str, int | str | None]],
     expected_data: list[dict[str, int | str | None]],
-    no_sleep: Generator[None, None, None],
+    mock_time_sleep: Any,
 ) -> None:
     db.tag_controller.upsert_all(
         [TagModel.model_validate(t) for t in [tag1, tag2, tag3, tag4]]

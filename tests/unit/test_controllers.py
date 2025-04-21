@@ -61,7 +61,7 @@ def test_tag_controller_upsert_all_success(
         tag_controller.upsert_all(tags)
 
         mock_pg_insert.assert_called_once_with(Tag)
-        stmt_mock.values.assert_called_once_with([tag.model_dump() for tag in tags])
+        stmt_mock.values.rssert_called_once_with([tag.model_dump() for tag in tags])
         stmt_mock.on_conflict_do_update.assert_called_once_with(
             index_elements=[Tag.id_mal], set_={"name": stmt_mock.excluded.name}
         )

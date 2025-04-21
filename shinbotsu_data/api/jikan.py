@@ -27,20 +27,18 @@ class JikanApiExtractor(BaseApiExctractor):
         self, endpoint: str, params: Optional[dict[str, str | int]], retry: int = 3
     ) -> Any:
         url = f"{self.base_url}/{endpoint}"
-        time.sleep(1)
         for attempt in range(retry):
+            if attempt > 0:
+                self.logger.warning(f"Retrying (attempt {attempt + 1}/{retry})")
+            time.sleep(2**attempt)
             try:
-                self.logger.debug(
-                    f"Attempting to fetch ressource on {endpoint} with params {params}"
-                )
                 response = requests.get(
                     url, headers=self.headers, params=params, timeout=1
                 )
                 response.raise_for_status()
                 return response.json()
             except requests.exceptions.Timeout as e:
-                self.logger.error(f"Request to {url} timed out: {e}.")
-                self.logger.warning(f"Retrying {attempt + 1}/{retry}")
+                self.logger.error(f"Request to {url} timed out: {e}")
             except requests.exceptions.HTTPError as e:
                 status_code = e.response.status_code
                 if status_code == 404:
@@ -51,14 +49,12 @@ class JikanApiExtractor(BaseApiExctractor):
                 elif status_code == 500:
                     self.logger.error(f"Internal server error: {e}")
                 elif status_code == 503:
-                    self.logger.error(f"Service unavailble: {e}")
-                self.logger.warning(f"Retrying {attempt + 1}/{retry}")
+                    self.logger.error(f"Service unavailable: {e}")
             except (
                 requests.exceptions.RequestException,
                 requests.exceptions.JSONDecodeError,
             ) as e:
-                self.logger.error(f"Other error occured: {e}")
+                self.logger.error(f"Other error occurred: {e}")
                 return None
-            time.sleep(2**attempt)
         self.logger.error(f"Failed to fetch data from {url} after {retry} attempts")
         return None
