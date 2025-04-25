@@ -60,19 +60,21 @@ class MagazineModel(BaseDataModel):
 class AnimeModel(BaseDataModel):
     id_mal: int = Field(validation_alias=AliasChoices("mal_id", "id_mal"))
     title: str
-    title_jp: str = Field(validation_alias=AliasChoices("title_japanese", "title_jp"))
-    type: str
-    source: str
+    title_jp: Optional[str] = Field(
+        validation_alias=AliasChoices("title_japanese", "title_jp")
+    )
+    type: Optional[str]
+    source: Optional[str]
     episodes: Optional[int]
-    status: str
+    status: Optional[str]
     aired_from: Optional[datetime.date] = Field(
         validation_alias=AliasChoices(AliasPath("aired", "from"), "aired_from")
     )
     aired_to: Optional[datetime.date] = Field(
         validation_alias=AliasChoices(AliasPath("aired", "to"), "aired_to")
     )
-    rating: str
-    synopsis: str
+    rating: Optional[str]
+    synopsis: Optional[str]
     season: Optional[str]
     year: Optional[int]
     url_mal: Optional[str] = Field(validation_alias=AliasChoices("url", "url_mal"))
@@ -112,9 +114,9 @@ class AnimeModel(BaseDataModel):
         )
     )
 
-    producers_ids: list[int] = Field(validation_alias="producers")
-    licensors_ids: list[int] = Field(validation_alias="licensors")
-    studios_ids: list[int] = Field(validation_alias="studios")
+    producers_ids: list[Optional[int]] = Field(validation_alias="producers")
+    licensors_ids: list[Optional[int]] = Field(validation_alias="licensors")
+    studios_ids: list[Optional[int]] = Field(validation_alias="studios")
     genres_ids: Optional[list[int]] = Field(validation_alias="genres")
     themes_ids: Optional[list[int]] = Field(validation_alias="themes")
     demographics_ids: Optional[list[int]] = Field(validation_alias="demographics")

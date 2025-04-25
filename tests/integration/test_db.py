@@ -2,14 +2,13 @@ from typing import Any
 import pytest
 from faker import Faker
 
-from shinbotsu_data.api.jikan import JikanApiExtractor, JikanEndpoints
-from shinbotsu_data.core.etl.jikan import extract_data
+from shinbotsu_data.utils import JikanEndpoints
+from shinbotsu_data.api.jikan import JikanApiExtractor
+from shinbotsu_data.core.etl.jikan import extract_data, extract_genres_and_producers
 from shinbotsu_data.core.schemas import (
     TagModel,
     ProducerModel,
     AnimeModel,
-    AnimeTagModel,
-    AnimeProducerModel,
 )
 from shinbotsu_data.database import Database
 from tests.mock.api_jikan import JikanAPIMock
@@ -223,88 +222,10 @@ def test_extract_data_anime(
         validated_initial_data = [
             AnimeModel.model_validate(ani) for ani in initial_data
         ]
-        anime_genres = []
-        anime_producers = []
-        for anime in validated_initial_data:
-            if anime.genres_ids is not None:
-                anime_genres.extend(
-                    [
-                        AnimeTagModel.model_validate(
-                            {
-                                "id_anime": anime.id_mal,
-                                "id_tag": id_genre,
-                                "relation": "genre",
-                            }
-                        )
-                        for id_genre in anime.genres_ids
-                    ]
-                )
-            if anime.themes_ids is not None:
-                anime_genres.extend(
-                    [
-                        AnimeTagModel.model_validate(
-                            {
-                                "id_anime": anime.id_mal,
-                                "id_tag": id_genre,
-                                "relation": "theme",
-                            }
-                        )
-                        for id_genre in anime.themes_ids
-                    ]
-                )
-            if anime.demographics_ids is not None:
-                anime_genres.extend(
-                    [
-                        AnimeTagModel.model_validate(
-                            {
-                                "id_anime": anime.id_mal,
-                                "id_tag": id_genre,
-                                "relation": "demographic",
-                            }
-                        )
-                        for id_genre in anime.demographics_ids
-                    ]
-                )
-            if anime.producers_ids is not None:
-                anime_producers.extend(
-                    [
-                        AnimeProducerModel.model_validate(
-                            {
-                                "id_anime": anime.id_mal,
-                                "id_producer": id_producer,
-                                "relation": "producer",
-                            }
-                        )
-                        for id_producer in anime.producers_ids
-                    ]
-                )
-            if anime.licensors_ids is not None:
-                anime_producers.extend(
-                    [
-                        AnimeProducerModel.model_validate(
-                            {
-                                "id_anime": anime.id_mal,
-                                "id_producer": id_producer,
-                                "relation": "licensor",
-                            }
-                        )
-                        for id_producer in anime.licensors_ids
-                    ]
-                )
-            if anime.studios_ids is not None:
-                anime_producers.extend(
-                    [
-                        AnimeProducerModel.model_validate(
-                            {
-                                "id_anime": anime.id_mal,
-                                "id_producer": id_producer,
-                                "relation": "studio",
-                            }
-                        )
-                        for id_producer in anime.studios_ids
-                    ]
-                )
         db.anime_controller.upsert_all(validated_initial_data)
+        anime_genres, anime_producers = extract_genres_and_producers(
+            validated_initial_data
+        )
         db.anime_tag_controller.upsert_all(anime_genres)
         db.anime_producer_controller.upsert_all(anime_producers)
 

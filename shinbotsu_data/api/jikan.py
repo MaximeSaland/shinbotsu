@@ -1,32 +1,26 @@
 import time
-from enum import Enum
 
 from shinbotsu_data.api.extractor import BaseApiExctractor
 
 from typing import Optional, Any
 import requests
 
-
-class JikanEndpoints(str, Enum):
-    ANIME = "anime"
-    MANGA = "manga"
-    TAG_ANIME = "genres/anime"
-    TAG_MANGA = "genres/manga"
-    PRODUCERS = "producers"
-    MAGAZINES = "magazines"
-    PEOPLE = "people"
+from shinbotsu_data.utils.constants import ApiUrls
 
 
 class JikanApiExtractor(BaseApiExctractor):
     def __init__(self) -> None:
         super().__init__(
-            base_url="https://api.jikan.moe/v4", headers={"Accept": "application/json"}
+            base_url=ApiUrls.JIKAN.value, headers={"Accept": "application/json"}
         )
 
     def fetch_data(
-        self, endpoint: str, params: Optional[dict[str, str | int]], retry: int = 3
+        self,
+        endpoint: str,
+        params: Optional[dict[str, str | int]] = None,
+        retry: int = 3,
     ) -> Any:
-        url = f"{self.base_url}/{endpoint}"
+        url = self.base_url + endpoint
         for attempt in range(retry):
             if attempt > 0:
                 self.logger.warning(f"Retrying (attempt {attempt + 1}/{retry})")
@@ -46,9 +40,15 @@ class JikanApiExtractor(BaseApiExctractor):
                     return None
                 elif status_code == 429:
                     self.logger.warning(f"Rate limit reached: {e}")
+                    if attempt < retry - 1:
+                        time.sleep(60)
                 elif status_code == 500:
                     self.logger.error(f"Internal server error: {e}")
+                    if attempt < retry - 1:
+                        time.sleep((attempt + 1) * 600)
                 elif status_code == 503:
+                    if attempt < retry - 1:
+                        time.sleep((attempt + 1) * 600)
                     self.logger.error(f"Service unavailable: {e}")
             except (
                 requests.exceptions.RequestException,

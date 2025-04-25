@@ -19,6 +19,9 @@ from shinbotsu_data.database.controllers.manga_people_controller import (
 from shinbotsu_data.database.controllers.manga_tag_controller import MangaTagController
 from shinbotsu_data.database.controllers.people_controller import PeopleController
 from shinbotsu_data.database.controllers.producer_controller import ProducerController
+from shinbotsu_data.database.controllers.scraper_state_controller import (
+    ScraperStateController,
+)
 from shinbotsu_data.database.db_models import Base
 
 
@@ -40,6 +43,7 @@ class Database:
         self.anime_producer_controller = AnimeProducerController(self.session_maker)
         self.manga_magazine_controller = MangaMagazineController(self.session_maker)
         self.manga_people_controller = MangaPeopleController(self.session_maker)
+        self.scraper_state_controller = ScraperStateController(self.session_maker)
 
     def _create_schema_if_not_exists(self, schema_name: str) -> None:
         with self._engine.connect() as connection:

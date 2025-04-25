@@ -1,0 +1,19 @@
+{
+  "configurations": [
+    {
+      "type": "python",
+      "request": "launch",
+      "name": "current file",
+      "program": "${file}",
+      "pythonPath": "${workspaceFolder}/.venv/bin/python"
+    },
+    {
+      "type": "python",
+      "request": "launch",
+      "name": "Main",
+      "pythonPath": "${workspaceFolder}/.venv/bin/python",
+      "module": "shinbotsu_data.main",
+      "console": "integratedTerminal" 
+    }
+  ]
+}

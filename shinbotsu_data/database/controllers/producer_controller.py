@@ -1,4 +1,5 @@
 import logging
+from typing import cast
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -8,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from shinbotsu_data.core.schemas import ProducerModel
 from shinbotsu_data.database.db_models import Producer
+from shinbotsu_data.utils import remove_dict_with_duplicate_field
 
 
 class ProducerController:
@@ -19,7 +21,9 @@ class ProducerController:
         """Insert producers in bulk
         :param producers: list of producers to insert
         """
-        producers_orm = [producer.model_dump() for producer in producers]
+        producers_orm = remove_dict_with_duplicate_field(
+            [producer.model_dump() for producer in producers], duplicate_field="id_mal"
+        )
         with self._session_maker() as session:
             stmt = pg_insert(Producer).values(producers_orm)
             stmt = stmt.on_conflict_do_update(
@@ -54,4 +58,13 @@ class ProducerController:
                 return producers
             except SQLAlchemyError as e:
                 self.logger.error(f"Select all failed: {e}")
+        return []
+
+    def get_all_ids(self) -> list[int]:
+        with self._session_maker() as session:
+            try:
+                ids = session.execute(select(Producer.id_mal)).scalars().all()
+                return cast(list[int], ids)
+            except SQLAlchemyError as e:
+                self.logger.error(f"Select all ids failed: {e}")
         return []

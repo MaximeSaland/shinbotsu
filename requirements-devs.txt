@@ -1,6 +1,6 @@
 pre-commit==4.2.0
 pytest==8.3.5
-sqlalchemy-utils-0.41.2
+sqlalchemy-utils==0.41.2
 faker==37.1.0
-requests-mock-1.12.1
+requests-mock==1.12.1
 pytest-mock==3.14.0

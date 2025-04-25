@@ -9,22 +9,31 @@ class Base(DeclarativeBase):
     metadata = MetaData(schema="data")
 
 
+class ScraperState(Base):
+    __tablename__ = "scraper_state"
+
+    endpoint: Mapped[str] = mapped_column(primary_key=True)
+    offset: Mapped[int]
+    last_updated: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.datetime.now(datetime.timezone.utc)
+    )
+
+
 # JIKAN TABLES
 class Anime(Base):
     __tablename__ = "anime"
 
-    # id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     id_mal: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
-    title_jp: Mapped[str]
-    type: Mapped[str]
-    source: Mapped[str]
+    title_jp: Mapped[Optional[str]]
+    type: Mapped[Optional[str]]
+    source: Mapped[Optional[str]]
     episodes: Mapped[Optional[int]]
-    status: Mapped[str]
+    status: Mapped[Optional[str]]
     aired_from: Mapped[Optional[datetime.date]]
     aired_to: Mapped[Optional[datetime.date]]
-    rating: Mapped[str]
-    synopsis: Mapped[str] = mapped_column(Text)
+    rating: Mapped[Optional[str]]
+    synopsis: Mapped[Optional[str]] = mapped_column(Text)
     season: Mapped[Optional[str]]
     year: Mapped[Optional[int]]
     url_mal: Mapped[Optional[str]]

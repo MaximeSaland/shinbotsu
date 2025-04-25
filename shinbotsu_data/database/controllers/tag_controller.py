@@ -7,6 +7,7 @@ from sqlalchemy import select
 
 from shinbotsu_data.core.schemas import TagModel
 from shinbotsu_data.database.db_models import Tag
+from shinbotsu_data.utils import remove_dict_with_duplicate_field
 
 
 class TagController:
@@ -18,7 +19,9 @@ class TagController:
         """Add tags in bulk
         :param tags: list of tags to insert
         """
-        tags_orm = [tag.model_dump() for tag in tags]
+        tags_orm = remove_dict_with_duplicate_field(
+            [tag.model_dump() for tag in tags], duplicate_field="id_mal"
+        )
         with self._session_maker() as session:
             stmt = pg_insert(Tag).values(tags_orm)
             stmt = stmt.on_conflict_do_update(

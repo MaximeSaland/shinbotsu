@@ -2,7 +2,8 @@ from typing import Any, Optional
 
 from requests_mock.mocker import Mocker
 
-from shinbotsu_data.api.jikan import JikanEndpoints
+from shinbotsu_data.utils import JikanEndpoints
+from shinbotsu_data.utils.constants import ApiUrls
 
 
 class JikanAPIMock(Mocker):
@@ -19,7 +20,6 @@ class JikanAPIMock(Mocker):
         self.tag_data = tag_data
         self.producer_data = producer_data
         self.anime_data = anime_data
-        self.base_url = "https://api.jikan.moe/v4"
         self.items_per_page = items_per_page
 
     def _pagination(
@@ -41,7 +41,7 @@ class JikanAPIMock(Mocker):
 
         if self.tag_data is not None:
             mocker.get(
-                url=f"{self.base_url}/{JikanEndpoints.TAG_MANGA}",
+                url=ApiUrls.JIKAN.value + JikanEndpoints.TAG_MANGA.value,
                 json={"data": self.tag_data},
             )
 
@@ -53,7 +53,9 @@ class JikanAPIMock(Mocker):
                 start = self.items_per_page * page
                 end = min(start + self.items_per_page, len(self.producer_data))
                 mocker.get(
-                    url=f"{self.base_url}/{JikanEndpoints.PRODUCERS.value}?page={page + 1}",
+                    url=ApiUrls.JIKAN.value
+                    + JikanEndpoints.PRODUCERS.value
+                    + f"?page={page + 1}",
                     json={
                         "pagination": self._pagination(
                             page,
@@ -71,7 +73,8 @@ class JikanAPIMock(Mocker):
                 start = self.items_per_page * page
                 end = min(start + self.items_per_page, len(self.anime_data))
                 mocker.get(
-                    url=f"{self.base_url}/{JikanEndpoints.ANIME.value}"
+                    url=ApiUrls.JIKAN.value
+                    + JikanEndpoints.ANIME.value
                     + f"?page={page + 1}",
                     json={
                         "pagination": self._pagination(

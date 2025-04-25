@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker, selectinload
 
 from shinbotsu_data.core.schemas import AnimeModel
 from shinbotsu_data.database.db_models import Anime
+from shinbotsu_data.utils import remove_dict_with_duplicate_field
 
 
 class AnimeController:
@@ -15,9 +16,10 @@ class AnimeController:
         self.logger = logging.getLogger(__name__)
 
     def upsert_all(self, anime: list[AnimeModel]) -> None:
-        anime_orm = [
-            ani.model_dump(include=Anime.__table__.columns.keys()) for ani in anime
-        ]
+        anime_orm = remove_dict_with_duplicate_field(
+            [ani.model_dump(include=Anime.__table__.columns.keys()) for ani in anime],
+            duplicate_field="id_mal",
+        )
         with self._session_maker() as session:
             stmt = pg_insert(Anime).values(anime_orm)
             stmt = stmt.on_conflict_do_update(
