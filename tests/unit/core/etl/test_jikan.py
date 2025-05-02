@@ -96,7 +96,6 @@ def test_extract_data_producers(
         return {}
 
     mock_api_extractor.fetch_data.side_effect = get_side_effect
-
     extract_data(
         mock_db,
         mock_api_extractor,
@@ -222,3 +221,52 @@ def test_extract_data_anime(mock_db: MagicMock, mock_api_extractor: MagicMock) -
         [AnimeModel.model_validate(a) for a in [ani3, ani4]]
     )
     assert mock_producer_controller.get_all_ids.call_count == 2
+
+
+def test_extract_data_tags_existing_scraper_state(
+    mock_db: MagicMock, mock_api_extractor: MagicMock
+) -> None:
+    mock_tag_controller = MagicMock()
+    mock_scraper_state_controller = MagicMock()
+    mock_scraper_state_controller.get_offset_by_endpoint.return_value = 2
+    mock_db.tag_controller = mock_tag_controller
+    mock_db.scraper_state_controller = mock_scraper_state_controller
+
+    def get_side_effect(endpoint: str, params: dict[str, int | bool]) -> dict[str, Any]:
+        if params["page"] == 1:
+            return {
+                "pagination": {"last_visible_page": 3, "has_next_page": True},
+                "data": [tag1],
+            }
+        elif params["page"] == 2:
+            return {
+                "pagination": {"last_visible_page": 3, "has_next_page": True},
+                "data": [tag2],
+            }
+        elif params["page"] == 3:
+            return {
+                "pagination": {"last_visible_page": 3, "has_next_page": False},
+                "data": [tag3],
+            }
+        return {}
+
+    mock_api_extractor.fetch_data.side_effect = get_side_effect
+
+    extract_data(
+        mock_db, mock_api_extractor, JikanEndpoints.TAG_MANGA.value, TagModel, "test"
+    )
+
+    assert mock_api_extractor.fetch_data.call_count == 2
+    mock_api_extractor.fetch_data.assert_any_call(
+        JikanEndpoints.TAG_MANGA.value, {"page": 2}
+    )
+    mock_api_extractor.fetch_data.assert_any_call(
+        JikanEndpoints.TAG_MANGA.value, {"page": 3}
+    )
+    assert mock_tag_controller.upsert_all.call_count == 2
+    mock_tag_controller.upsert_all.assert_any_call(
+        [TagModel.model_validate(t) for t in [tag2]]
+    )
+    mock_tag_controller.upsert_all.assert_any_call(
+        [TagModel.model_validate(t) for t in [tag3]]
+    )

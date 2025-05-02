@@ -116,66 +116,70 @@ class AnimeProducer(Base):
 class Manga(Base):
     __tablename__ = "manga"
 
-    # id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    id_mal: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str]
-    title_jp: Mapped[str]
+    id: Mapped[str] = mapped_column(primary_key=True)
+    title: str
+    title_jp: Mapped[Optional[str]]
+    synopsis: Mapped[Optional[str]]
+    synopsis_jp: Mapped[Optional[str]]
+    last_volume: Mapped[Optional[int]]
+    last_chapter: Mapped[Optional[int]]
+    demographic: Mapped[Optional[str]]
+    status: Mapped[Optional[str]]
+    publication_year: Mapped[Optional[int]]
+    rating: Mapped[Optional[str]]
+    id_anilist: Mapped[Optional[int]]
+    id_amazon: Mapped[Optional[int]]
+    id_bookwalker: Mapped[Optional[str]]
+    id_mal: Mapped[Optional[int]]
+
+
+class Author(Base):
+    __tablename__ = "author"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str]
+
+
+class MangaAuthor(Base):
+    __tablename__ = "manga_author"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id_manga: Mapped[str] = mapped_column(ForeignKey("manga.id", ondelete="CASCADE"))
+    id_author: Mapped[str] = mapped_column(ForeignKey("author.id", ondelete="CASCADE"))
+    relation: Mapped[str]
+
+    __table_args__ = UniqueConstraint(
+        "id_manga", "id_author", "relation", name="unique_manga_author_relation"
+    )
+
+
+class MangaRelation(Base):
+    __tablename__ = "manga_relation"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id_manga: Mapped[str] = mapped_column(ForeignKey("manga.id", ondelete="CASCADE"))
+    id_manga_related: Mapped[str] = mapped_column(
+        ForeignKey("manga.id", ondelete="CASCADE")
+    )
+    relation: Mapped[str]
+
+    __table_args__ = UniqueConstraint(
+        "id_manga", "id_manga_related", name="unique_manga_manga_related"
+    )
+
+
+class TagMangadex(Base):
+    __tablename__ = "tag_mangadex"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str]
     type: Mapped[str]
-    chapters: Mapped[int]
-    volumes: Mapped[int]
-    status: Mapped[str]
-    published_from: Mapped[datetime.date]
-    published_to: Mapped[datetime.date]
-    synopsis: Mapped[str] = mapped_column(Text)
-    url_mal: Mapped[Optional[str]]
-    url_img_jpg: Mapped[Optional[str]]
-    url_img_jpg_small: Mapped[Optional[str]]
-    url_img_jpg_large: Mapped[Optional[str]]
-    url_img_webp: Mapped[Optional[str]]
-    url_img_webp_small: Mapped[Optional[str]]
-    url_img_webp_large: Mapped[Optional[str]]
 
 
 class MangaTag(Base):
-    __tablename__ = "manga_tag"
-
-    id_manga: Mapped[int] = mapped_column(ForeignKey("manga.id_mal"), primary_key=True)
-    id_tag: Mapped[int] = mapped_column(ForeignKey("tag.id_mal"), primary_key=True)
-    relation: Mapped[str]
-
-
-class People(Base):
-    __tablename__ = "people"
-
-    id_mal: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    given_name: Mapped[Optional[str]]
-    family_name: Mapped[Optional[str]]
-    url_mal: Mapped[str]
-    url_img: Mapped[Optional[str]]
-
-
-class MangaPeople(Base):
-    __tablename__ = "manga_people"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    id_manga: Mapped[int] = mapped_column(ForeignKey("manga.id_mal"))
-    id_people: Mapped[int] = mapped_column(ForeignKey("people.id_mal"))
-    relation: Mapped[str]
-
-
-class Magazine(Base):
-    __tablename__ = "magazine"
-
-    id_mal: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    url_mal: Mapped[str]
-
-
-class MangaMagazine(Base):
-    __tablename__ = "manga_magazine"
-
-    id_manga: Mapped[int] = mapped_column(ForeignKey("manga.id_mal"), primary_key=True)
-    id_magazine: Mapped[int] = mapped_column(
-        ForeignKey("magazine.id_mal"), primary_key=True
+    id_manga: Mapped[str] = mapped_column(
+        ForeignKey("manga.id", ondelete="CASCADE"), primary_key=True
+    )
+    id_tag: Mapped[str] = mapped_column(
+        ForeignKey("tag_mangadex.id", ondelete="CASCADE"), primary_key=True
     )

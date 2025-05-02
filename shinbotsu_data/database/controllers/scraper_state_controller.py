@@ -4,7 +4,7 @@ from typing import Optional
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from shinbotsu_data.database.db_models import ScraperState
 
@@ -36,11 +36,16 @@ class ScraperStateController:
                 self.logger.error(f"Insert failed: {e}")
 
     def get_offset_by_endpoint(self, endpoint: str) -> Optional[int]:
+        session: Session
         with self._session_maker() as session:
             try:
-                res = session.get(ScraperState, endpoint).scalar()
-                if res is not None:
-                    return None
+                res = (
+                    session.query(ScraperState.offset)
+                    .filter_by(endpoint=endpoint)
+                    .one_or_none()
+                )
+                if res:
+                    return int(res[0])
             except SQLAlchemyError as e:
                 self.logger.error(f"Selecting scraper state by endpoint failed: {e}")
         return None
