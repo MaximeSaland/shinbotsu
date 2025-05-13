@@ -119,7 +119,7 @@ def test_extract_data_tag(
 
     with JikanAPIMock(tag_data=incoming_data):
         extract_data(
-            db, jikan_api_extractor, JikanEndpoints.TAG_MANGA, TagModel, "test"
+            db, jikan_api_extractor, JikanEndpoints.TAG_MANGA.value, TagModel, "test"
         )
 
     actual_data = sorted(db.tag_controller.get_all(), key=lambda tag: tag.id_mal)

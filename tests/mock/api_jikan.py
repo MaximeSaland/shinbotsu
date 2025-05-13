@@ -3,7 +3,6 @@ from typing import Any, Optional
 from requests_mock.mocker import Mocker
 
 from shinbotsu_data.utils import JikanEndpoints
-from shinbotsu_data.utils.constants import ApiUrls
 
 
 class JikanAPIMock(Mocker):
@@ -41,7 +40,7 @@ class JikanAPIMock(Mocker):
 
         if self.tag_data is not None:
             mocker.get(
-                url=ApiUrls.JIKAN.value + JikanEndpoints.TAG_MANGA.value,
+                url=JikanEndpoints.TAG_MANGA.value,
                 json={"data": self.tag_data},
             )
 
@@ -53,9 +52,7 @@ class JikanAPIMock(Mocker):
                 start = self.items_per_page * page
                 end = min(start + self.items_per_page, len(self.producer_data))
                 mocker.get(
-                    url=ApiUrls.JIKAN.value
-                    + JikanEndpoints.PRODUCERS.value
-                    + f"?page={page + 1}",
+                    url=JikanEndpoints.PRODUCERS.value + f"?page={page + 1}",
                     json={
                         "pagination": self._pagination(
                             page,
@@ -73,9 +70,7 @@ class JikanAPIMock(Mocker):
                 start = self.items_per_page * page
                 end = min(start + self.items_per_page, len(self.anime_data))
                 mocker.get(
-                    url=ApiUrls.JIKAN.value
-                    + JikanEndpoints.ANIME.value
-                    + f"?page={page + 1}",
+                    url=JikanEndpoints.ANIME.value + f"?page={page + 1}",
                     json={
                         "pagination": self._pagination(
                             page, nb_pages_anime, end - start, len(self.anime_data)
