@@ -465,10 +465,10 @@ def test_scraper_state_controller_upsert_success(
         mock_stmt.values.return_value = mock_stmt
         mock_stmt.on_conflict_do_update.return_value = mock_stmt
 
-        mock_controller.upsert(endpoint=endpoint, offset=1)
+        mock_controller.upsert(endpoint=endpoint, state={"page": 1})
 
         mock_pg_insert.assert_called_once_with(ScraperState)
-        mock_stmt.values.assert_called_once_with(endpoint=endpoint, offset=1)
+        mock_stmt.values.assert_called_once_with(endpoint=endpoint, state={"page": 1})
         mock_stmt.on_conflict_do_update.assert_called_once()
         mock_session.execute.assert_called_once_with(mock_stmt)
         mock_session.commit.assert_called_once()
@@ -491,7 +491,7 @@ def test_scraper_state_controller_upsert_failure(
         mock_stmt.values.return_value = mock_stmt
         mock_stmt.on_conflict_do_update.return_value = mock_stmt
 
-        mock_controller.upsert(endpoint=endpoint, offset=1)
+        mock_controller.upsert(endpoint=endpoint, state={"page": 1})
 
         mock_session.execute.assert_called_once_with(mock_stmt)
         mock_session.commit.assert_not_called()

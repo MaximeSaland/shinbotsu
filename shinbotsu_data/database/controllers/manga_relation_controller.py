@@ -14,8 +14,10 @@ class MangaRelationController:
         self.logger = logging.getLogger(__name__)
 
     def upsert_all(self, manga_relations: list[MangaRelationModel]) -> None:
+        fields = {col for col in MangaRelation.__table__.columns.keys()}
         manga_relations_orm = [
-            manga_relation.model_dump() for manga_relation in manga_relations
+            manga_relation.model_dump(include=fields)
+            for manga_relation in manga_relations
         ]
         with self._session_maker() as session:
             stmt = pg_insert(MangaRelation).values(manga_relations_orm)

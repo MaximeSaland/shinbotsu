@@ -7,16 +7,16 @@ class ApiUrls(str, Enum):
 
 
 class MangadexEndpoints(str, Enum):
-    AUTHOR = "/author"
-    MANGA = "/manga"
-    TAG = "/manga/tag"
+    AUTHOR = ApiUrls.MANGADEX.value + "/author"
+    MANGA = ApiUrls.MANGADEX.value + "/manga"
+    TAG = ApiUrls.MANGADEX.value + "/manga/tag"
 
 
 class JikanEndpoints(str, Enum):
-    ANIME = "/anime"
-    MANGA = "/manga"
-    TAG_ANIME = "/genres/anime"
-    TAG_MANGA = "/genres/manga"
-    PRODUCERS = "/producers"
-    MAGAZINES = "/magazines"
-    PEOPLE = "/people"
+    ANIME = ApiUrls.JIKAN.value + "/anime"
+    MANGA = ApiUrls.JIKAN.value + "/manga"
+    TAG_ANIME = ApiUrls.JIKAN.value + "/genres/anime"
+    TAG_MANGA = ApiUrls.JIKAN.value + "/genres/manga"
+    PRODUCERS = ApiUrls.JIKAN.value + "/producers"
+    MAGAZINES = ApiUrls.JIKAN.value + "/magazines"
+    PEOPLE = ApiUrls.JIKAN.value + "/people"

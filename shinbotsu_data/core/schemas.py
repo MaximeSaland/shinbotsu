@@ -10,6 +10,7 @@ from pydantic import (
     ValidationError,
     field_validator,
     AliasChoices,
+    model_validator,
 )
 
 logger = logging.getLogger(__name__)
@@ -101,12 +102,12 @@ class AnimeModel(BaseDataModel):
         )
     )
 
-    producers_ids: list[Optional[int]] = Field(validation_alias="producers")
-    licensors_ids: list[Optional[int]] = Field(validation_alias="licensors")
-    studios_ids: list[Optional[int]] = Field(validation_alias="studios")
-    genres_ids: Optional[list[int]] = Field(validation_alias="genres")
-    themes_ids: Optional[list[int]] = Field(validation_alias="themes")
-    demographics_ids: Optional[list[int]] = Field(validation_alias="demographics")
+    producers_ids: list[int] = Field(default=[], validation_alias="producers")
+    licensors_ids: list[int] = Field(default=[], validation_alias="licensors")
+    studios_ids: list[int] = Field(default=[], validation_alias="studios")
+    genres_ids: list[int] = Field(default=[], validation_alias="genres")
+    themes_ids: list[int] = Field(default=[], validation_alias="themes")
+    demographics_ids: list[int] = Field(default=[], validation_alias="demographics")
 
     @field_validator(
         "producers_ids",
@@ -136,94 +137,154 @@ class AnimeProducerModel(BaseDataModel):
     relation: str
 
 
-# MangaModel
+# Mangadex
+class AuthorModel(BaseDataModel):
+    id: str
+    name: str = Field(validation_alias=AliasPath("attributes", "name"))
+
+
+class TagMangadexModel(BaseDataModel):
+    id: str
+    name: str = Field(validation_alias=AliasPath("attributes", "name", "en"))
+    type: str = Field(validation_alias=AliasPath("attributes", "group"))
+
+
 class MangaRelationModel(BaseDataModel):
     id_manga: str
     id_manga_related: str
     relation: str
+    manga_related: "MangaModel"
 
 
 class MangaAuthorModel(BaseDataModel):
     id_manga: str
     id_author: str
     relation: str
-
-
-class MangaModel(BaseDataModel):
-    id: str
-    title: str = Field(validation_alias=AliasPath("title", "en"))
-    title_jp: Optional[str]
-    synopsis: Optional[str] = Field(validation_alias=AliasPath("description", "en"))
-    synopsis_jp: Optional[str] = Field(validation_alias=AliasPath("description", "ja"))
-    last_volume: Optional[int] = Field(validation_alias="lastVolume")
-    last_chapter: Optional[int] = Field(validation_alias="lastChapter")
-    demographic: Optional[str] = Field(validation_alias="publicationDemographic")
-    status: Optional[str]
-    publication_year: Optional[int] = Field(validation_alias="year")
-    rating: Optional[str] = Field(validation_alias="contentRating")
-    id_anilist: Optional[int] = Field(validation_alias=AliasPath("links", "al"))
-    id_amazon: Optional[int] = Field(validation_alias=AliasPath("links", "amz"))
-    id_bookwalker: Optional[str] = Field(validation_alias=AliasPath("links", "bw"))
-    id_mal: Optional[int] = Field(validation_alias=AliasPath("links", "mal"))
-    id_cover_art: Optional[str] = ""
-    manga_relations: list[Optional[MangaRelationModel]] = []
-    authors_relations: list[Optional[MangaAuthorModel]] = []
-
-    @field_validator("id_cover_art", mode="before")
-    @classmethod
-    def extract_covert_art_id(cls, val: Any) -> Any:
-        for relation in val["relationships"]:
-            if relation["type"] == "cover_art":
-                return relation["id"]
-
-    @field_validator("manga_relations", mode="before")
-    @classmethod
-    def extract_manga_relations(cls, val: Any) -> Any:
-        manga_relations = []
-        for relation in val["relationships"]:
-            if relation["type"] == "manga":
-                try:
-                    manga_relations.append(
-                        MangaRelationModel(
-                            id_manga=val["id"],
-                            id_manga_related=relation["id"],
-                            relation=relation["related"],
-                        )
-                    )
-                except (KeyError, ValidationError) as e:
-                    logger.warning(f"MangaModel validation failed: {e}")
-        return manga_relations
-
-    @field_validator("authors_relations", mode="before")
-    @classmethod
-    def extract_authors_relations(cls, val: Any) -> Any:
-        authors_relations = []
-        for relation in val["relationships"]:
-            if relation["type"] in ["artist", "author"]:
-                try:
-                    authors_relations.append(
-                        MangaAuthorModel(
-                            id_manga=val["id"],
-                            id_author=relation["id"],
-                            relation=relation["type"],
-                        )
-                    )
-                except (KeyError, ValidationError) as e:
-                    logger.warning(f"MangaModel validation failed: {e}")
-        return authors_relations
-
-
-class AuthorModel(BaseDataModel):
-    id: str
-    name: str
-
-
-class TagMangadexModel(BaseDataModel):
-    id: str
-    name: str
-    type: str
+    author: AuthorModel
 
 
 class MangaTagModel(BaseDataModel):
     id_manga: str
     id_tag: str
+
+
+class MangaModel(BaseDataModel):
+    id: str
+    title: str
+    title_jp: Optional[str] = ""
+    synopsis: Optional[str] = Field(
+        default=None, validation_alias=AliasPath("attributes", "description", "en")
+    )
+    synopsis_jp: Optional[str] = Field(
+        default=None, validation_alias=AliasPath("attributes", "description", "ja")
+    )
+    last_volume: Optional[str] = Field(
+        default=None, validation_alias=AliasPath("attributes", "lastVolume")
+    )
+    last_chapter: Optional[str] = Field(
+        validation_alias=AliasPath("attributes", "lastChapter")
+    )
+    demographic: Optional[str] = Field(
+        validation_alias=AliasPath("attributes", "publicationDemographic")
+    )
+    status: Optional[str] = Field(
+        default=None, validation_alias=AliasPath("attributes", "status")
+    )
+    publication_year: Optional[int] = Field(
+        default=None, validation_alias=AliasPath("attributes", "year")
+    )
+    rating: Optional[str] = Field(
+        default=None, validation_alias=AliasPath("attributes", "contentRating")
+    )
+    id_anilist: Optional[str] = Field(
+        default=None, validation_alias=AliasPath("attributes", "links", "al")
+    )
+    id_amazon: Optional[str] = Field(
+        default=None, validation_alias=AliasPath("attributes", "links", "amz")
+    )
+    id_bookwalker: Optional[str] = Field(
+        default=None, validation_alias=AliasPath("attributes", "links", "bw")
+    )
+    id_mal: Optional[str] = Field(
+        default=None, validation_alias=AliasPath("attributes", "links", "mal")
+    )
+    id_cover_art: Optional[str] = Field(default=None)
+    manga_relations: list[MangaRelationModel] = Field(default=[])
+    manga_authors: list[MangaAuthorModel] = Field(default=[])
+    manga_tags: list[MangaTagModel] = Field(default=[])
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_relationships(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        data["manga_relations"] = []
+        data["manga_authors"] = []
+        data["manga_tags"] = []
+        for relation in data.get("relationships", []):
+            match relation["type"]:
+                case "cover_art":
+                    data["id_cover_art"] = relation["id"]
+                case "author" | "artist":
+                    data["manga_authors"].append(
+                        {
+                            "id_manga": data["id"],
+                            "id_author": relation["id"],
+                            "relation": relation["type"],
+                            "author": relation,
+                        }
+                    )
+                case "manga":
+                    data["manga_relations"].append(
+                        {
+                            "id_manga": data["id"],
+                            "id_manga_related": relation["id"],
+                            "relation": relation["type"],
+                            "manga_related": relation,
+                        }
+                    )
+        for tag in data.get("attributes", {}).get("tags", []):
+            data["manga_tags"].append({"id_manga": data["id"], "id_tag": tag["id"]})
+
+        title: dict[str, str] = data.get("attributes", {}).get("title", {})
+        altTitles = data.get("attributes", {}).get("altTitles", [])
+        data["title"] = next(iter(title.values()), None)
+        data["title_jp"] = None
+        if "en" not in title:
+            for altTitle in altTitles:
+                if "en" in altTitle:
+                    data["title"] = altTitle["en"]
+                    break
+        for altTitle in altTitles:
+            if "ja" in altTitle:
+                data["title_jp"] = altTitle["ja"]
+                break
+            if "ja-ro" in altTitle:
+                data["title_jp"] = altTitle["ja-ro"]
+        return data
+
+    # example of manga with the following issue: 68b257db-f74b-47ff-946b-284f9fc47c17
+    @field_validator("manga_relations", mode="before")
+    @classmethod
+    def remove_inexistant_manga_from_manga_relations(cls, v: Any) -> Any:
+        updated_manga_relations = []
+        for mr in v:
+            try:
+                MangaRelationModel.model_validate(mr)
+                updated_manga_relations.append(mr)
+            except ValidationError:
+                pass
+        return updated_manga_relations
+
+    # example of manga with inexistant author: 1bbdc5f0-574d-4a49-819d-6d23f6b7a9a7
+    @field_validator("manga_authors", mode="before")
+    @classmethod
+    def remove_inexistant_author_from_manga_authors(cls, v: Any) -> Any:
+        updated_manga_authors = []
+        for ma in v:
+            try:
+                MangaAuthorModel.model_validate(ma)
+                updated_manga_authors.append(ma)
+            except ValidationError:
+                pass
+        return updated_manga_authors

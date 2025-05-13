@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     db_uri: str = ""
     db_uri_test: str = ""
 
-    etl_name: Literal["JIKAN"]
+    etl_name: Literal["JIKAN", "MANGADEX"]
 
     model_config = SettingsConfigDict(
         env_file=Path(__file__).parent.parent / ".env",

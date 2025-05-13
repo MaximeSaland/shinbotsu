@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 from abc import ABC, abstractmethod
 
 import logging
@@ -12,7 +12,10 @@ class BaseApiExctractor(ABC):
 
     @abstractmethod
     def fetch_data(
-        self, endpoint: str, params: Optional[dict[str, str | int]], retry: int
+        self,
+        endpoint: str,
+        params: Optional[dict[str, str | int | list[Any]]],
+        retry: int,
     ) -> None:
         """Fetch data from an API given a specific endpoint
 

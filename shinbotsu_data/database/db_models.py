@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import ForeignKey, Text, MetaData, UniqueConstraint
+from sqlalchemy import JSON, ForeignKey, Text, MetaData, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 import datetime
@@ -13,7 +13,7 @@ class ScraperState(Base):
     __tablename__ = "scraper_state"
 
     endpoint: Mapped[str] = mapped_column(primary_key=True)
-    offset: Mapped[int]
+    state: Mapped[dict] = mapped_column(JSON)
     last_updated: Mapped[datetime.datetime] = mapped_column(
         default=datetime.datetime.now(datetime.timezone.utc)
     )
@@ -113,24 +113,25 @@ class AnimeProducer(Base):
     )
 
 
+# Mangadex
 class Manga(Base):
     __tablename__ = "manga"
 
     id: Mapped[str] = mapped_column(primary_key=True)
-    title: str
+    title: Mapped[str]
     title_jp: Mapped[Optional[str]]
     synopsis: Mapped[Optional[str]]
     synopsis_jp: Mapped[Optional[str]]
-    last_volume: Mapped[Optional[int]]
-    last_chapter: Mapped[Optional[int]]
+    last_volume: Mapped[Optional[str]]
+    last_chapter: Mapped[Optional[str]]
     demographic: Mapped[Optional[str]]
     status: Mapped[Optional[str]]
     publication_year: Mapped[Optional[int]]
     rating: Mapped[Optional[str]]
-    id_anilist: Mapped[Optional[int]]
-    id_amazon: Mapped[Optional[int]]
+    id_anilist: Mapped[Optional[str]]
+    id_amazon: Mapped[Optional[str]]
     id_bookwalker: Mapped[Optional[str]]
-    id_mal: Mapped[Optional[int]]
+    id_mal: Mapped[Optional[str]]
 
 
 class Author(Base):
@@ -148,24 +149,23 @@ class MangaAuthor(Base):
     id_author: Mapped[str] = mapped_column(ForeignKey("author.id", ondelete="CASCADE"))
     relation: Mapped[str]
 
-    __table_args__ = UniqueConstraint(
-        "id_manga", "id_author", "relation", name="unique_manga_author_relation"
+    __table_args__ = (
+        UniqueConstraint(
+            "id_manga", "id_author", "relation", name="unique_manga_author_relation"
+        ),
     )
 
 
 class MangaRelation(Base):
     __tablename__ = "manga_relation"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    id_manga: Mapped[str] = mapped_column(ForeignKey("manga.id", ondelete="CASCADE"))
+    id_manga: Mapped[str] = mapped_column(
+        ForeignKey("manga.id", ondelete="CASCADE"), primary_key=True
+    )
     id_manga_related: Mapped[str] = mapped_column(
-        ForeignKey("manga.id", ondelete="CASCADE")
+        ForeignKey("manga.id", ondelete="CASCADE"), primary_key=True
     )
     relation: Mapped[str]
-
-    __table_args__ = UniqueConstraint(
-        "id_manga", "id_manga_related", name="unique_manga_manga_related"
-    )
 
 
 class TagMangadex(Base):
@@ -177,6 +177,8 @@ class TagMangadex(Base):
 
 
 class MangaTag(Base):
+    __tablename__ = "manga_tag"
+
     id_manga: Mapped[str] = mapped_column(
         ForeignKey("manga.id", ondelete="CASCADE"), primary_key=True
     )

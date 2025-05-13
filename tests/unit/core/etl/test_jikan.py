@@ -78,9 +78,10 @@ def test_extract_data_producers(
 ) -> None:
     mock_producer_controller = MagicMock()
     mock_scraper_state_controller = MagicMock()
-    mock_scraper_state_controller.get_offset_by_endpoint.return_value = None
+    mock_scraper_state_controller.get_state_by_endpoint.return_value = None
     mock_db.producer_controller = mock_producer_controller
     mock_db.scraper_state_controller = mock_scraper_state_controller
+    mock_db.scraper_state_controller.get_state_by_endpoint.return_value = {"page": 1}
 
     def get_side_effect(endpoint: str, params: dict[str, int | bool]) -> dict[str, Any]:
         if params["page"] == 1:
@@ -104,7 +105,7 @@ def test_extract_data_producers(
         "test",
     )
 
-    assert mock_api_extractor.fetch_data.call_count == 2
+    assert mock_api_extractor.fetch_data.call_count == 3
     mock_api_extractor.fetch_data.assert_any_call(
         JikanEndpoints.PRODUCERS.value, {"page": 1}
     )
@@ -123,9 +124,10 @@ def test_extract_data_producers(
 def test_extract_data_tags(mock_db: MagicMock, mock_api_extractor: MagicMock) -> None:
     mock_tag_controller = MagicMock()
     mock_scraper_state_controller = MagicMock()
-    mock_scraper_state_controller.get_offset_by_endpoint.return_value = None
+    mock_scraper_state_controller.get_state_by_endpoint.return_value = None
     mock_db.tag_controller = mock_tag_controller
     mock_db.scraper_state_controller = mock_scraper_state_controller
+    mock_db.scraper_state_controller.get_state_by_endpoint.return_value = {"page": 1}
 
     def get_side_effect(endpoint: str, params: dict[str, int | bool]) -> dict[str, Any]:
         if params["page"] == 1:
@@ -146,7 +148,7 @@ def test_extract_data_tags(mock_db: MagicMock, mock_api_extractor: MagicMock) ->
         mock_db, mock_api_extractor, JikanEndpoints.TAG_MANGA.value, TagModel, "test"
     )
 
-    assert mock_api_extractor.fetch_data.call_count == 2
+    assert mock_api_extractor.fetch_data.call_count == 3
     mock_api_extractor.fetch_data.assert_any_call(
         JikanEndpoints.TAG_MANGA.value, {"page": 1}
     )
@@ -172,9 +174,10 @@ def test_extract_data_anime(mock_db: MagicMock, mock_api_extractor: MagicMock) -
         [prod1["mal_id"], prod2["mal_id"], prod3["mal_id"], prod4["mal_id"]],
     ]
     mock_scraper_state_controller = MagicMock()
-    mock_scraper_state_controller.get_offset_by_endpoint.return_value = None
+    mock_scraper_state_controller.get_state_by_endpoint.return_value = None
     mock_db.anime_controller = mock_anime_controller
     mock_db.scraper_state_controller = mock_scraper_state_controller
+    mock_db.scraper_state_controller.get_state_by_endpoint.return_value = {"page": 1}
     mock_db.anime_tag_controller = mock_anime_tag_controller
     mock_db.anime_producer_controller = mock_anime_producer_controller
     mock_db.producer_controller = mock_producer_controller
@@ -203,7 +206,7 @@ def test_extract_data_anime(mock_db: MagicMock, mock_api_extractor: MagicMock) -
         mock_db, mock_api_extractor, JikanEndpoints.ANIME.value, AnimeModel, "test"
     )
 
-    assert mock_api_extractor.fetch_data.call_count == 3
+    assert mock_api_extractor.fetch_data.call_count == 4
     mock_api_extractor.fetch_data.assert_any_call(
         JikanEndpoints.ANIME.value, {"page": 1}
     )
@@ -228,9 +231,10 @@ def test_extract_data_tags_existing_scraper_state(
 ) -> None:
     mock_tag_controller = MagicMock()
     mock_scraper_state_controller = MagicMock()
-    mock_scraper_state_controller.get_offset_by_endpoint.return_value = 2
+    mock_scraper_state_controller.get_state_by_endpoint.return_value = 2
     mock_db.tag_controller = mock_tag_controller
     mock_db.scraper_state_controller = mock_scraper_state_controller
+    mock_db.scraper_state_controller.get_state_by_endpoint.return_value = {"page": 2}
 
     def get_side_effect(endpoint: str, params: dict[str, int | bool]) -> dict[str, Any]:
         if params["page"] == 1:
@@ -256,7 +260,7 @@ def test_extract_data_tags_existing_scraper_state(
         mock_db, mock_api_extractor, JikanEndpoints.TAG_MANGA.value, TagModel, "test"
     )
 
-    assert mock_api_extractor.fetch_data.call_count == 2
+    assert mock_api_extractor.fetch_data.call_count == 3
     mock_api_extractor.fetch_data.assert_any_call(
         JikanEndpoints.TAG_MANGA.value, {"page": 2}
     )

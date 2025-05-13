@@ -2,15 +2,18 @@ from typing import Callable
 
 from shinbotsu_data.api.jikan import JikanApiExtractor
 from shinbotsu_data.core.etl.jikan import etl_jikan
+from shinbotsu_data.core.etl.mangadex import etl_mangadex
 from shinbotsu_data.database.database import Database
 from shinbotsu_data.settings import Settings
 
 apis = {
     "JIKAN": JikanApiExtractor,
+    "MANGADEX": JikanApiExtractor,
 }
 
 etl_mapping: dict[str, Callable[[Database, JikanApiExtractor], None]] = {
     "JIKAN": etl_jikan,
+    "MANGADEX": etl_mangadex,
 }
 
 

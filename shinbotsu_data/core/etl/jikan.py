@@ -14,7 +14,7 @@ from shinbotsu_data.core.schemas import (
     AnimeProducerModel,
 )
 from shinbotsu_data.database.database import Database
-from shinbotsu_data.utils import ApiUrls, ProgressBar
+from shinbotsu_data.utils import ProgressBar
 
 logger = logging.getLogger(__name__)
 
@@ -122,18 +122,19 @@ def extract_data(
     existing_producer_ids: list[int] = []
     if endpoint == JikanEndpoints.ANIME.value:
         existing_producer_ids = db.producer_controller.get_all_ids()
-    scraping_endpoint = ApiUrls.JIKAN.value + endpoint
-    page = db.scraper_state_controller.get_offset_by_endpoint(scraping_endpoint) or 1
+    state = db.scraper_state_controller.get_state_by_endpoint(endpoint)
+    page = state.get("page", 1)
+
+    total_pages = (
+        api_extractor.fetch_data(endpoint, {"page": page})
+        .get("pagination", {})
+        .get("last_visible_page", 1)
+    )
+    progress_bar = ProgressBar(total_pages, prefix=f"JIKAN - {prefix} ")
+    progress_bar.update_progress(page - 1)
+
     while True:
-        # TODO Add update logic -> keep track of the latest fetched page
         response = api_extractor.fetch_data(endpoint, {"page": page})
-        total_pages = (
-            response["pagination"].get("last_visible_page")
-            if "pagination" in response
-            else 1
-        )
-        progress_bar = ProgressBar(total_pages, prefix=f"JIKAN - {prefix} ")
-        progress_bar.update_progress(0)
         if "data" in response:
             validated_items: list[ValidationModel] = []
             for item in response["data"]:
@@ -184,9 +185,7 @@ def extract_data(
                         db.anime_producer_controller.upsert_all(anime_producers)
 
         progress_bar.update_progress(page)
-        db.scraper_state_controller.upsert(
-            endpoint=scraping_endpoint, offset=page
-        )  # update scraping progression
+        db.scraper_state_controller.upsert(endpoint=endpoint, state={"page": page})
 
         if "pagination" not in response or not response["pagination"].get(
             "has_next_page"
